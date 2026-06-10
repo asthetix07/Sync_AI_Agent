@@ -1,0 +1,124 @@
+# ── 1. Secrets & Environment Variables (CRITICAL) ─────────────────────────────
+# Never commit credentials, keys, or local config files to source control.
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+*.env.*
+*.pem
+*.key
+*.pub
+*.cert
+*.pfx
+*.crt
+
+# ── 2. Python (Backend) Caches & Builds ───────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+/lib/
+/lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ── 3. Python Virtual Environments ───────────────────────────────────────────
+.venv/
+venv/
+ENV/
+env/
+pip-selfcheck.json
+pip-log.txt
+
+# ── 4. Python Testing & Coverage ──────────────────────────────────────────────
+.cache/
+.pytest_cache/
+.tox/
+.nosexy
+.noseids
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+
+# ── 5. Node.js & Next.js (Frontend) ───────────────────────────────────────────
+node_modules/
+.next/
+out/
+tsconfig.tsbuildinfo
+.eslintcache
+.stylelintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ── 6. IDEs & Editors ─────────────────────────────────────────────────────────
+# VS Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+# PyCharm / WebStorm / IntelliJ
+.idea/
+*.iws
+*.iml
+# Other Editors
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# ── 7. Operating System Files ─────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+Frontend/next-env.d.ts
+
+# ── 8. Local Databases & Logs ─────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.log
+local_db/
+pgdata/
+backend/start_production.sh
+backend/gunicorn.conf.py
+
+
+# ── 9. Docker (Optional local configs) ────────────────────────────────────────
+# Do NOT ignore Dockerfiles or main docker-compose.yml as they are needed for deployment.
+# Only ignore local overrides or custom local env files.
+docker-compose.override.yml
+```
+

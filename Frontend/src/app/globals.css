@@ -1,0 +1,301 @@
+@import "tailwindcss";
+
+.font-sync-ai {
+  font-family: var(--font-sync-ai), sans-serif;
+}
+
+/* ── Tailwind Theme Overrides ───────────────────────────── */
+@theme {
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sync-ai: var(--font-sync-ai), sans-serif;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CSS CUSTOM PROPERTIES — DARK THEME (default)
+   ══════════════════════════════════════════════════════════ */
+:root,
+[data-theme="dark"] {
+  /* ── Surfaces ─────────────────────────────────────────── */
+  --color-bg-primary: #050505;
+  --color-bg-secondary: #0a0a0a;
+  --color-bg-tertiary: #111111;
+  --color-bg-elevated: #141414;
+  --color-bg-code: #0c0c0c;
+  --color-bg-code-header: #111;
+
+  /* ── Text ──────────────────────────────────────────────── */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.80);
+  --color-text-tertiary: rgba(255, 255, 255, 0.50);
+  --color-text-muted: rgba(255, 255, 255, 0.40);
+  --color-text-faint: rgba(255, 255, 255, 0.30);
+  --color-text-ghost: rgba(255, 255, 255, 0.20);
+  --color-text-placeholder: rgba(255, 255, 255, 0.25);
+  --color-text-badge: rgba(255, 255, 255, 0.35);
+
+  /* ── Borders ───────────────────────────────────────────── */
+  --color-border-primary: rgba(255, 255, 255, 0.06);
+  --color-border-secondary: rgba(255, 255, 255, 0.08);
+  --color-border-focus: rgba(255, 255, 255, 0.15);
+  --color-border-subtle: rgba(255, 255, 255, 0.04);
+
+  /* ── Interactive / Hover states ────────────────────────── */
+  --color-hover-bg: rgba(255, 255, 255, 0.05);
+  --color-hover-bg-strong: rgba(255, 255, 255, 0.07);
+  --color-active-bg: rgba(255, 255, 255, 0.08);
+  --color-surface-glass: rgba(255, 255, 255, 0.02);
+  --color-surface-glass-hover: rgba(255, 255, 255, 0.04);
+  --color-surface-chip: rgba(255, 255, 255, 0.03);
+  --color-surface-chip-hover: rgba(255, 255, 255, 0.07);
+  --color-chip-border: rgba(255, 255, 255, 0.06);
+  --color-chip-border-hover: rgba(255, 255, 255, 0.12);
+
+  /* ── Accent ────────────────────────────────────────────── */
+  --color-accent: #6366f1;
+  --color-accent-hover: #818cf8;
+  --color-accent-selection: rgba(99, 102, 241, 0.3);
+  --color-accent-glow: rgba(99, 102, 241, 0.12);
+  --color-accent-drop: rgba(99, 102, 241, 0.05);
+  --color-accent-drop-border: rgba(99, 102, 241, 0.5);
+  --color-code-inline: #a78bfa;
+
+  /* ── Status ────────────────────────────────────────────── */
+  --color-status-active: #34d399;
+  --color-red-hover-bg: rgba(239, 68, 68, 0.10);
+  --color-red-text: rgba(248, 113, 113, 0.80);
+  --color-red-text-hover: #f87171;
+
+  /* ── Gradients & Effects ───────────────────────────────── */
+  --gradient-heading-from: white;
+  --gradient-heading-to: rgba(255, 255, 255, 0.50);
+  --gradient-brand-from: white;
+  --gradient-brand-to: rgba(255, 255, 255, 0.60);
+  --gradient-input-from: #050505;
+  --gradient-input-via: #050505;
+
+  /* ── Scrollbar ─────────────────────────────────────────── */
+  --color-scrollbar-thumb: rgba(255, 255, 255, 0.08);
+  --color-scrollbar-thumb-hover: rgba(255, 255, 255, 0.15);
+
+  /* ── Shimmer / skeleton ────────────────────────────────── */
+  --shimmer-from: rgba(255, 255, 255, 0.03);
+  --shimmer-mid: rgba(255, 255, 255, 0.06);
+
+  /* ── Typing dots ───────────────────────────────────────── */
+  --color-typing-dot: rgba(255, 255, 255, 0.3);
+
+  /* ── Misc ──────────────────────────────────────────────── */
+  --color-overlay: rgba(0, 0, 0, 0.60);
+  --color-overlay-login: rgba(0, 0, 0, 0.70);
+  --color-shadow: rgba(0, 0, 0, 0.40);
+  --color-user-avatar-bg: #4f46e5;
+  --color-bot-avatar-from: rgba(255, 255, 255, 0.10);
+  --color-bot-avatar-to: rgba(255, 255, 255, 0.05);
+  --color-settings-icon-filter: none;
+  --color-file-icon-filter: none;
+  --login-btn-bg: white;
+  --login-btn-text: black;
+  --login-btn-hover: #e5e7eb;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CSS CUSTOM PROPERTIES — LIGHT THEME
+   ══════════════════════════════════════════════════════════ */
+[data-theme="light"] {
+  /* ── Surfaces ─────────────────────────────────────────── */
+  --color-bg-primary: #f8f9fb;
+  --color-bg-secondary: #f0f1f5;
+  --color-bg-tertiary: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-code: #f4f4f7;
+  --color-bg-code-header: #e8e8ed;
+
+  /* ── Text ──────────────────────────────────────────────── */
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: rgba(26, 26, 46, 0.80);
+  --color-text-tertiary: rgba(26, 26, 46, 0.55);
+  --color-text-muted: rgba(26, 26, 46, 0.45);
+  --color-text-faint: rgba(26, 26, 46, 0.35);
+  --color-text-ghost: rgba(26, 26, 46, 0.22);
+  --color-text-placeholder: rgba(26, 26, 46, 0.35);
+  --color-text-badge: rgba(26, 26, 46, 0.45);
+
+  /* ── Borders ───────────────────────────────────────────── */
+  --color-border-primary: rgba(26, 26, 46, 0.08);
+  --color-border-secondary: rgba(26, 26, 46, 0.12);
+  --color-border-focus: rgba(99, 102, 241, 0.35);
+  --color-border-subtle: rgba(26, 26, 46, 0.05);
+
+  /* ── Interactive / Hover states ────────────────────────── */
+  --color-hover-bg: rgba(26, 26, 46, 0.04);
+  --color-hover-bg-strong: rgba(26, 26, 46, 0.07);
+  --color-active-bg: rgba(99, 102, 241, 0.08);
+  --color-surface-glass: rgba(26, 26, 46, 0.02);
+  --color-surface-glass-hover: rgba(26, 26, 46, 0.05);
+  --color-surface-chip: rgba(26, 26, 46, 0.04);
+  --color-surface-chip-hover: rgba(99, 102, 241, 0.08);
+  --color-chip-border: rgba(26, 26, 46, 0.10);
+  --color-chip-border-hover: rgba(99, 102, 241, 0.30);
+
+  /* ── Accent ────────────────────────────────────────────── */
+  --color-accent: #6366f1;
+  --color-accent-hover: #4f46e5;
+  --color-accent-selection: rgba(99, 102, 241, 0.2);
+  --color-accent-glow: rgba(99, 102, 241, 0.08);
+  --color-accent-drop: rgba(99, 102, 241, 0.05);
+  --color-accent-drop-border: rgba(99, 102, 241, 0.4);
+  --color-code-inline: #7c3aed;
+
+  /* ── Status ────────────────────────────────────────────── */
+  --color-status-active: #10b981;
+  --color-red-hover-bg: rgba(239, 68, 68, 0.08);
+  --color-red-text: rgba(220, 38, 38, 0.80);
+  --color-red-text-hover: #dc2626;
+
+  /* ── Gradients & Effects ───────────────────────────────── */
+  --gradient-heading-from: #1a1a2e;
+  --gradient-heading-to: rgba(26, 26, 46, 0.65);
+  --gradient-brand-from: #1a1a2e;
+  --gradient-brand-to: rgba(26, 26, 46, 0.55);
+  --gradient-input-from: #f8f9fb;
+  --gradient-input-via: #f8f9fb;
+
+  /* ── Scrollbar ─────────────────────────────────────────── */
+  --color-scrollbar-thumb: rgba(26, 26, 46, 0.12);
+  --color-scrollbar-thumb-hover: rgba(26, 26, 46, 0.22);
+
+  /* ── Shimmer / skeleton ────────────────────────────────── */
+  --shimmer-from: rgba(26, 26, 46, 0.04);
+  --shimmer-mid: rgba(26, 26, 46, 0.08);
+
+  /* ── Typing dots ───────────────────────────────────────── */
+  --color-typing-dot: rgba(26, 26, 46, 0.3);
+
+  /* ── Misc ──────────────────────────────────────────────── */
+  --color-overlay: rgba(26, 26, 46, 0.30);
+  --color-overlay-login: rgba(26, 26, 46, 0.40);
+  --color-shadow: rgba(26, 26, 46, 0.08);
+  --color-user-avatar-bg: #6366f1;
+  --color-bot-avatar-from: rgba(26, 26, 46, 0.08);
+  --color-bot-avatar-to: rgba(26, 26, 46, 0.04);
+  --color-settings-icon-filter: invert(0.3);
+  --color-file-icon-filter: invert(0.3);
+  --login-btn-bg: #1a1a2e;
+  --login-btn-text: white;
+  --login-btn-hover: #2d2d48;
+}
+
+/* ── Custom scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-thumb-hover);
+}
+
+/* ── Global resets ───────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+::selection {
+  background: var(--color-accent-selection);
+}
+
+/* ── Textarea reset ──────────────────────────────────────── */
+textarea:focus {
+  outline: none;
+  box-shadow: none;
+}
+textarea::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+/* ── Glow effect for the landing page ────────────────────── */
+.glow-orb {
+  position: absolute;
+  width: 900px;
+  height: 900px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-accent-glow) 0%, transparent 70%);
+  filter: blur(140px);
+  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ── Skeleton pulse animation ────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--shimmer-from) 25%, var(--shimmer-mid) 50%, var(--shimmer-from) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ── Typing indicator dots ───────────────────────────────── */
+@keyframes bounce-dot {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+}
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-typing-dot);
+  display: inline-block;
+  animation: bounce-dot 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Code block styling ──────────────────────────────────── */
+.prose pre {
+  background: var(--color-bg-code) !important;
+  border: 1px solid var(--color-border-primary);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.prose code {
+  color: var(--color-code-inline);
+  font-size: 0.875em;
+}
+.prose p {
+  line-height: 1.75;
+}
+
+/* ── Upload drop zone ────────────────────────────────────── */
+.drop-zone-active {
+  border-color: var(--color-accent-drop-border) !important;
+  background: var(--color-accent-drop) !important;
+}
+
+/* ── Smooth theme transitions ────────────────────────────── */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease !important;
+}
