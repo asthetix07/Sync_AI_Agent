@@ -57,11 +57,17 @@ export default function ChatInput({
     }
   };
 
-  // Auto-resize textarea
+  // Auto-resize textarea — only grow when there's actual content
   useEffect(() => {
     if (textareaRef.current) {
+      // Reset height to auto first to correctly measure scrollHeight
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+      if (input.trim().length === 0) {
+        // No content — enforce single-row height
+        textareaRef.current.style.height = "40px";
+      } else {
+        textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+      }
     }
   }, [input]);
 
@@ -118,6 +124,8 @@ export default function ChatInput({
           style={{
             color: "var(--color-text-primary)",
             caretColor: "var(--color-accent)",
+            minHeight: "40px",
+            maxHeight: "200px",
           }}
         />
 

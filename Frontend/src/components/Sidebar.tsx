@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
   MessageSquare,
   ChevronRight,
   Menu,
+  X,
   LogOut,
   Trash2,
   Sun,
@@ -44,17 +45,61 @@ export default function Sidebar({
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const { theme, toggleTheme } = useTheme();
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   return (
     <>
+    {/* ── Mobile: Floating hamburger button (only when sidebar is closed) ── */}
+    {isMobile && !isOpen && isLoggedIn && (
+      <button
+        id="sidebar-toggle-mobile"
+        onClick={onToggle}
+        className="fixed top-3 right-3 z-50 p-2.5 rounded-xl cursor-pointer"
+        style={{
+          background: "var(--color-bg-secondary)",
+          border: "1px solid var(--color-border-secondary)",
+          color: "var(--color-text-primary)",
+        }}
+      >
+        <Menu size={20} />
+      </button>
+    )}
+
+    {/* ── Mobile backdrop overlay ────────────────────────────── */}
+    <AnimatePresence>
+      {isMobile && isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-40"
+          style={{ background: "var(--color-overlay)" }}
+          onClick={onToggle}
+        />
+      )}
+    </AnimatePresence>
+
+    {/* ── Sidebar panel ─────────────────────────────────────── */}
+    {(!isMobile || isOpen) && (
     <motion.aside
       initial={false}
-      animate={{ width: isOpen ? 272 : 68 }}
+      animate={{ width: isOpen ? 272 : (isMobile ? 0 : 68) }}
       transition={{ duration: 0.25, ease: "easeInOut" }}
-      className="relative flex flex-col h-screen overflow-hidden shrink-0"
+      className={`flex flex-col h-dvh overflow-hidden shrink-0 ${
+        isMobile ? "fixed top-0 right-0 z-50" : "relative"
+      }`}
       style={{
         background: "var(--color-bg-secondary)",
-        borderLeft: "1px solid var(--color-border-primary)",
+        borderLeft: isMobile ? "none" : "1px solid var(--color-border-primary)",
       }}
     >
       {/* ── Header ──────────────────────────────────────────── */}
@@ -66,7 +111,7 @@ export default function Sidebar({
           className={`p-2 rounded-lg transition-colors ${!isLoggedIn ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           style={{ color: "var(--color-text-primary)" }}
         >
-          {isOpen ? <ChevronRight size={20} /> : <Menu size={20} />}
+          {isOpen ? (isMobile ? <X size={20} /> : <ChevronRight size={20} />) : <Menu size={20} />}
         </button>
         {isOpen && (
           <motion.span
@@ -87,7 +132,7 @@ export default function Sidebar({
         <div className="px-3 mb-4">
           <button
             id="new-chat-btn"
-            onClick={onNewChat}
+            onClick={() => { onNewChat(); if (isMobile) onToggle(); }}
             className="flex items-center gap-3 w-full p-3 rounded-xl transition-all group cursor-pointer"
             style={{
               border: "1px solid var(--color-border-secondary)",
@@ -124,8 +169,8 @@ export default function Sidebar({
             {sessions.map((session) => (
               <div key={session.id} className="group relative">
                 <button
-                  onClick={() => onSelectSession(session.id)}
-                  className="flex items-center gap-3 w-full p-3 rounded-xl transition-all text-left cursor-pointer"
+                  onClick={() => { onSelectSession(session.id); if (isMobile) onToggle(); }}
+                  className="flex items-center gap-3 w-full p-3 pr-10 rounded-xl transition-all text-left cursor-pointer"
                   style={
                     currentSessionId === session.id
                       ? {
@@ -145,13 +190,15 @@ export default function Sidebar({
                   </span>
                 </button>
 
-                {/* Delete button (shown on hover) */}
+                {/* Delete button — always visible on mobile (no hover), hover on desktop */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setDeleteConfirmId(session.id);
                   }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all cursor-pointer hover:!text-red-400"
+                  className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all cursor-pointer hover:!text-red-400 ${
+                    isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                  }`}
                   style={{ color: "var(--color-text-ghost)" }}
                 >
                   <Trash2 size={14} />
@@ -165,7 +212,10 @@ export default function Sidebar({
       {/* ── Footer / User Profile ───────────────────────────── */}
       <div
         className="p-3 space-y-2"
-        style={{ borderTop: "1px solid var(--color-border-primary)" }}
+        style={{
+          borderTop: "1px solid var(--color-border-primary)",
+          paddingBottom: isMobile ? "calc(0.75rem + env(safe-area-inset-bottom, 16px))" : "0.75rem",
+        }}
       >
         {isOpen && (
           <div
@@ -297,6 +347,7 @@ export default function Sidebar({
         )}
       </div>
     </motion.aside>
+    )}
 
     {/* ── Logout Confirmation Dialog ─────────────────────── */}
     <AnimatePresence>

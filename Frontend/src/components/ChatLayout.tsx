@@ -377,7 +377,7 @@ export default function ChatLayout() {
         const errMsg: Message = {
           id: uuidv4(),
           role: "assistant",
-          content: "❌ Failed to upload the PDF. Please check the backend and try again.",
+          content: "❌ Failed to upload the PDF. Please try again after some time.",
           timestamp: Date.now(),
         };
         setSessions((prev) =>
@@ -395,7 +395,7 @@ export default function ChatLayout() {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden font-sans" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }}>
+    <div className="flex h-dvh overflow-hidden font-sans" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }}>
       <main className="flex-1 flex flex-col relative overflow-hidden">
         {!currentSessionId ? (
           <HomeView onSend={handleSendMessage} onUploadPdf={handleUploadPdf} isLoggedIn={isLoggedIn} />

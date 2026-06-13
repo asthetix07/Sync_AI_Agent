@@ -299,3 +299,33 @@ textarea::placeholder {
 .theme-transition *::after {
   transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease !important;
 }
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE OVERRIDES
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  /* Smaller glow orb on mobile */
+  .glow-orb {
+    width: 400px;
+    height: 400px;
+    filter: blur(80px);
+  }
+
+  /* Prevent textarea from growing unexpectedly */
+  textarea {
+    min-height: 40px !important;
+    max-height: 200px !important;
+  }
+
+  /* Ensure body accounts for phone navigation bars */
+  html, body {
+    /* Use dvh to account for mobile browser chrome */
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* Reduce prose spacing on mobile */
+  .prose p {
+    line-height: 1.6;
+  }
+}

@@ -55,7 +55,7 @@ export default function HomeView({ onSend, onUploadPdf, isLoggedIn }: HomeViewPr
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="w-full max-w-2xl px-6 text-center space-y-10 z-10"
+        className="w-full max-w-2xl px-6 text-center space-y-4 md:space-y-10 z-10"
       >
         {/* Badge */}
         <motion.div
@@ -74,7 +74,7 @@ export default function HomeView({ onSend, onUploadPdf, isLoggedIn }: HomeViewPr
         </motion.div>
 
         {/* Heading */}
-        <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.08] flex flex-wrap justify-center items-center gap-x-3 gap-y-2">
+        <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08] flex flex-wrap justify-center items-center gap-x-3 gap-y-1 md:gap-y-2">
           <span
             className="bg-clip-text text-transparent"
             style={{
@@ -101,11 +101,26 @@ export default function HomeView({ onSend, onUploadPdf, isLoggedIn }: HomeViewPr
           </span>
         </h1>
 
+        {/* Purpose description — only shown for logged-out users (required for Google OAuth branding verification) */}
+        {!isLoggedIn && (
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="text-base md:text-lg leading-relaxed max-w-xl mx-auto"
+            style={{ color: "var(--color-text-tertiary)" }}
+          >
+            Sync AI is an AI-powered assistant that helps you search the web,
+            write code, and get answers — all in one place
+            with persistent memory across conversations.
+          </motion.p>
+        )}
+
         {/* Chat Input */}
         <ChatInput onSend={onSend} onUploadPdf={onUploadPdf} variant="home" isDisabled={!isLoggedIn} />
 
         {/* Suggestion Chips */}
-        <div className="flex flex-wrap justify-center gap-2.5 pt-2">
+        <div className="flex flex-wrap justify-center gap-2 md:gap-2.5 pt-1 md:pt-2">
           {SUGGESTIONS.map((item, index) => (
             <motion.button
               key={index}
