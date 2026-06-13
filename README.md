@@ -1,4 +1,12 @@
-# 🤖 Sync AI
+<div align="center">
+  <img width="150" height="150" alt="SYNC" src="https://github.com/user-attachments/assets/d5e0ba6c-efff-4b88-a18f-5b9a2bc4e405" />
+</div>
+
+<div align="center">
+  <a href="https://sync-ai.dev">Sync AI</a>
+</div>
+     
+---
 
 Sync AI is a full-stack, enterprise-grade conversational AI assistant. It features persistent conversation memory, automated PDF document ingestion via Retrieval-Augmented Generation (RAG), context-aware web search routing, and API key load-balancing.
 
@@ -10,7 +18,7 @@ Designed with high concurrency and reliability in mind, it is split into a Next.
 
 ### Backend (FastAPI + LangChain)
 - **Context-Aware Agentic Pipeline:** Uses an intelligent query-intent classifier with heuristic pre-filtering to route search queries, minimize latency, and save on LLM token usage.
-- **Dynamic API Key Rotation:** Features custom `KeyPool` rotation for Groq, Gemini, and Serper search engines to gracefully handle high concurrency and model rate limits.
+- **Dynamic API Key Rotation:** Features custom `KeyPool` rotation for Gemini and Serper search engines to gracefully handle high concurrency and model rate limits.
 - **Robust RAG Pipeline:** Handles PDF ingestion by parsing, semantic/token chunking, embedding generation using Google Gemini, and storing in a PostgreSQL database with the `pgvector` extension.
 - **Thread-Safe Memory & Cache:** Implements checkpointed database session storage coupled with an in-process LRU cache (TTL-based) to ensure fast state retrieval for active threads.
 - **Enterprise-Grade Security:** Equipped with secure CORS controls, HTTP Security Headers, request payload size limitations (DoS protection), and rate-limiting (`slowapi`).
@@ -28,7 +36,7 @@ Designed with high concurrency and reliability in mind, it is split into a Next.
 |---|---|---|
 | **Backend Framework** | [FastAPI](https://fastapi.tiangolo.com/) | High-performance, modern web framework for building APIs with Python. |
 | **Orchestration** | [LangChain](https://www.langchain.com/) | Prompt management, agent tool-calling, and custom chains. |
-| **LLM Inference** | [Groq](https://groq.com/) | Llama-3.3-70B for chatting/RAG; Llama-3.1-8B for intent classification. |
+| **LLM Inference** | [Gemini]([https://groq.com/](https://cloud.google.com/use-cases/ai-chatbot)) | gemini-3.1-flash-lite for intent classification. |
 | **Vector DB / Storage** | [PostgreSQL](https://www.postgresql.org/) + [pgvector](https://github.com/pgvector/pgvector) | Vector storage, chat history tracking, and session state persistence. |
 | **Embeddings** | [Google Gemini](https://ai.google.dev/) | High-quality text embeddings (`gemini-embedding-2-preview`). |
 | **Search Engine** | [Serper API](https://serper.dev/) | High-speed Google Search API for web grounding. |
