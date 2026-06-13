@@ -84,7 +84,7 @@ export default function ChatView({
 
   return (
     <div
-      className="flex-1 flex flex-col h-screen overflow-hidden"
+      className="flex-1 flex flex-col h-dvh overflow-hidden"
       style={{ background: "var(--color-bg-primary)" }}
     >
       {/* ── Header ──────────────────────────────────────────── */}
@@ -112,7 +112,7 @@ export default function ChatView({
       {/* ── Messages ────────────────────────────────────────── */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto pt-6 pb-44"
+        className="flex-1 overflow-y-auto pt-6 pb-36 md:pb-44"
       >
         <div className="max-w-4xl mx-auto px-6 space-y-6">
           {messages.map((message) => (
@@ -282,7 +282,7 @@ export default function ChatView({
 
       {/* ── Input Area ──────────────────────────────────────── */}
       <div
-        className="mt-auto relative z-10 px-6 pb-6 pt-8 shrink-0"
+        className="mt-auto relative z-10 px-4 md:px-6 pb-4 md:pb-6 pt-6 md:pt-8 shrink-0"
         style={{
           background: `linear-gradient(to top, var(--gradient-input-from), var(--gradient-input-via), transparent)`,
         }}
