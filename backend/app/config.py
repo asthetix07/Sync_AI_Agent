@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # ── Security / JWT ────────────────────────────────────
     secret_key: str  # REQUIRED — used for JWT signing, must be in .env
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: int = 10080  # 7 days (60 min * 24 hr * 7 days)
 
     # ── CORS ──────────────────────────────────────────────
     backend_cors_origins: List[str] = [

@@ -72,10 +72,10 @@ export default function Page() {
           isLoggedIn={isLoggedIn}
         />
         {!isLoggedIn && !showLoginDialog && (
-          <div className="absolute bottom-3 md:bottom-6 left-0 right-0 flex flex-col items-center gap-2 md:gap-3 z-40">
+          <div className="absolute bottom-2 md:bottom-4 left-0 right-0 flex flex-col items-center gap-1.5 md:gap-2 z-40">
             <button
               onClick={() => setShowLoginDialog(true)}
-              className="px-5 py-2.5 md:px-6 md:py-3 rounded-full font-semibold shadow-lg transition-colors cursor-pointer text-sm md:text-base"
+              className="px-5 py-2 md:px-6 md:py-2.5 rounded-full font-semibold shadow-lg transition-colors cursor-pointer text-sm md:text-base"
               style={{ background: 'var(--login-btn-bg)', color: 'var(--login-btn-text)' }}
             >
               Login to <span className="font-sync-ai font-bold">Sync AI</span>
@@ -89,6 +89,13 @@ export default function Page() {
               {" & "}
               <Link href="/privacy_policy" className="underline hover:opacity-80 transition-opacity" style={{ color: 'var(--color-text-tertiary)' }}>Privacy Policy</Link>.
             </p>
+            <Link
+              href="/about"
+              className="px-4 py-1.5 md:px-5 md:py-2 rounded-full font-semibold shadow-lg transition-colors cursor-pointer text-[11px] md:text-xs"
+              style={{ background: 'var(--login-btn-bg)', color: 'var(--login-btn-text)' }}
+            >
+              About <span className="font-sync-ai font-bold">Sync AI</span>
+            </Link>
           </div>
         )}
       </main>

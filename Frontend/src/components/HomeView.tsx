@@ -55,7 +55,7 @@ export default function HomeView({ onSend, onUploadPdf, isLoggedIn }: HomeViewPr
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="w-full max-w-2xl px-6 text-center space-y-4 md:space-y-10 z-10"
+        className="w-full max-w-2xl px-6 pb-28 md:pb-36 text-center space-y-4 md:space-y-6 z-10"
       >
         {/* Badge */}
         <motion.div
@@ -74,17 +74,17 @@ export default function HomeView({ onSend, onUploadPdf, isLoggedIn }: HomeViewPr
         </motion.div>
 
         {/* Heading */}
-        <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08] flex flex-wrap justify-center items-center gap-x-3 gap-y-1 md:gap-y-2">
+        <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.15] text-center">
           <span
             className="bg-clip-text text-transparent"
             style={{
               backgroundImage: "linear-gradient(to bottom, var(--gradient-heading-from), var(--gradient-heading-to))",
             }}
           >
-            What can, 
+            What can{" "}
           </span>
           <span
-            className="font-sync-ai font-semibold text-[1.15em] tracking-tight bg-clip-text text-transparent transform translate-y-[-2px]"
+            className="font-sync-ai font-semibold tracking-tight bg-clip-text text-transparent inline-block transform translate-y-[-2px] mx-1"
             style={{
               backgroundImage: "linear-gradient(to right, var(--gradient-brand-from), var(--gradient-brand-to))",
             }}
@@ -92,12 +92,12 @@ export default function HomeView({ onSend, onUploadPdf, isLoggedIn }: HomeViewPr
             Sync AI
           </span>
           <span
-            className="bg-clip-text text-transparent"
+            className="bg-clip-text text-transparent block sm:inline"
             style={{
               backgroundImage: "linear-gradient(to bottom, var(--gradient-heading-from), var(--gradient-heading-to))",
             }}
           >
-            help you with?
+            {" "}help you with?
           </span>
         </h1>
 

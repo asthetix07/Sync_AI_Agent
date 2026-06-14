@@ -317,11 +317,11 @@ textarea::placeholder {
     max-height: 200px !important;
   }
 
-  /* Ensure body accounts for phone navigation bars */
+  /* Use dvh so the chat page (which sets its own h-dvh) sizes
+     correctly against mobile browser chrome. Do NOT set
+     overflow:hidden here — content pages need natural scroll. */
   html, body {
-    /* Use dvh to account for mobile browser chrome */
     height: 100dvh;
-    overflow: hidden;
   }
 
   /* Reduce prose spacing on mobile */

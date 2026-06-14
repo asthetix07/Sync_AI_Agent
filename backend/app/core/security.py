@@ -80,7 +80,12 @@ COOKIE_NAME = "access_token"
 
 
 def set_auth_cookie(response: Response, token: str) -> None:
-    """Set an httpOnly secure cookie containing the JWT."""
+    """Set an httpOnly secure cookie containing the JWT.
+
+    The cookie persists for the full token lifetime (default 7 days).
+    It is only cleared when the user explicitly logs out, or clears
+    browser cookies/cache. There is no automatic 30-minute expiry.
+    """
     settings = get_settings()
     response.set_cookie(
         key=COOKIE_NAME,
@@ -88,7 +93,7 @@ def set_auth_cookie(response: Response, token: str) -> None:
         httponly=True,                    # JS cannot read this cookie
         secure=settings.cookie_secure,    # True in production (HTTPS only)
         samesite="lax",                   # CSRF protection
-        max_age=settings.access_token_expire_minutes * 60,
+        max_age=settings.access_token_expire_minutes * 60,  # e.g. 7 days = 604800 s
         path="/",
         domain=settings.cookie_domain or None,
     )
