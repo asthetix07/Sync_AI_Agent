@@ -326,7 +326,7 @@ export default function Sidebar({
         {isOpen && (
           <div className="flex justify-center gap-4 mt-2 px-2">
             <a
-              href="/privacy_policy"
+              href="/privacypolicy"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[10px] transition-colors"
@@ -335,7 +335,7 @@ export default function Sidebar({
               Privacy Policy
             </a>
             <a
-              href="/terms_of_service"
+              href="/termsofservice"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[10px] transition-colors"
