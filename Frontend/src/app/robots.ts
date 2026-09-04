@@ -61,8 +61,16 @@ export default function robots(): MetadataRoute.Robots {
       // ── Allow all crawlers (general), block only query-param spam
       {
         userAgent: "*",
-        allow: ["/", "/llm.txt", "/llms.txt", "/llms-full.txt"],
-        disallow: ["/*?q="],
+        allow: [
+          "/",
+          "/about",
+          "/termsofservice",
+          "/privacypolicy",
+          "/llm.txt",
+          "/llms.txt",
+          "/llms-full.txt",
+        ],
+        disallow: ["/chat", "/api", "/*?q="],
       },
 
       // ── Block every scraper / data-harvesting bot

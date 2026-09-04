@@ -85,9 +85,9 @@ export default function Page() {
               style={{ color: 'var(--color-text-faint)' }}
             >
               Sync AI is Artificial Intelligence. By using it, you agree to our{" "}
-              <Link href="/terms_of_service" className="underline hover:opacity-80 transition-opacity" style={{ color: 'var(--color-text-tertiary)' }}>Terms</Link>
+              <Link href="/termsofservice" className="underline hover:opacity-80 transition-opacity" style={{ color: 'var(--color-text-tertiary)' }}>Terms</Link>
               {" & "}
-              <Link href="/privacy_policy" className="underline hover:opacity-80 transition-opacity" style={{ color: 'var(--color-text-tertiary)' }}>Privacy Policy</Link>.
+              <Link href="/privacypolicy" className="underline hover:opacity-80 transition-opacity" style={{ color: 'var(--color-text-tertiary)' }}>Privacy Policy</Link>.
             </p>
             <Link
               href="/about"

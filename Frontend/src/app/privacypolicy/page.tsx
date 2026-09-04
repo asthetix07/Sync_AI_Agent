@@ -5,9 +5,9 @@ export default function PrivacyPolicyPage() {
     <div className="min-h-screen bg-[#0a0a0a] text-white/80 p-8 md:p-16">
       <div className="max-w-3xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-sync-ai">Privacy Policy</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-sync-ai">{'>>'} Privacy Policy</h1>
           <p className="text-lg text-white/60">Your privacy matters to us. Here is exactly what we collect and why.</p>
-          <p className="text-sm text-white/40 mt-1">Effective Date: May 12, 2026 | Sync-ai.dev</p>
+          <p className="text-sm text-white/40 mt-1">Effective Date: June 17, 2026 | Sync-ai.dev</p>
         </div>
 
         <section className="space-y-4">

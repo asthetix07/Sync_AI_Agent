@@ -163,8 +163,8 @@ The home screen offers four quick-start suggestions:
 | Path | Description |
 |---|---|
 | `/` | Main application — home screen and chat interface |
-| `/privacy_policy` | Privacy Policy page |
-| `/terms_of_service` | Terms of Service page |
+| `/privacypolicy` | Privacy Policy page |
+| `/termsofservice` | Terms of Service page |
 
 ## Contact & Links
 

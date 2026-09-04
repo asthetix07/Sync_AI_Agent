@@ -1,13 +1,23 @@
 import React from "react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service | Sync AI",
+  description:
+    "Read the Terms of Service for Sync AI. Understand your rights and responsibilities when using our AI-powered assistant platform.",
+  alternates: {
+    canonical: "https://sync-ai.dev/termsofservice",
+  },
+};
 
 export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white/80 p-8 md:p-16">
       <div className="max-w-3xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-sync-ai">Terms of Service</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-sync-ai">{'>>'} Terms of Service</h1>
           <p className="text-lg text-white/60">Please read these terms carefully before using our platform.</p>
-          <p className="text-sm text-white/40 mt-1">Effective Date: May 12, 2026 | Sync-ai.dev</p>
+          <p className="text-sm text-white/40 mt-1">Effective Date: June 17, 2026 | Sync-ai.dev</p>
         </div>
 
         <section className="space-y-4">
@@ -58,7 +68,7 @@ export default function TermsOfServicePage() {
 
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-white">7. Privacy</h2>
-          <p>Your use of the Service is also governed by our Privacy Policy, which is incorporated into these Terms by reference. Please review our Privacy Policy at https://Sync-ai.dev/privacy to understand our data practices.</p>
+          <p>Your use of the Service is also governed by our Privacy Policy, which is incorporated into these Terms by reference. Please review our Privacy Policy at https://sync-ai.dev/privacypolicy to understand our data practices.</p>
         </section>
 
         <section className="space-y-4">
