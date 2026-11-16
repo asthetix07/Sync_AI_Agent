@@ -97,6 +97,12 @@ class Settings(BaseSettings):
     # ── Resend (transactional emails) ────────────────────
     resend_api_key: str = ""        # Resend API key for sending emails
 
+    # ── Cloudinary (Profile Picture Uploads) ─────────────
+    cloudinary_cloud_name: str = ""
+    cloudinary_api_key: str = ""
+    cloudinary_api_secret: str = ""
+    cloudinary_url: str = ""
+
     # ── Helper: get effective key list for rotation ──────
 
 

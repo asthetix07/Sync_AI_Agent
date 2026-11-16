@@ -5,6 +5,11 @@
  * All requests include `credentials: "include"` so the browser
  * sends the httpOnly `access_token` cookie set by the backend.
  *
+ * Auto-refresh: When any API call gets a 401, the client
+ * automatically attempts a silent token refresh via /api/auth/refresh
+ * before retrying the original request once. If refresh also fails,
+ * the 401 propagates to the caller.
+ *
  * Endpoints proxied:
  *   POST   /api/chat            → Send message, get AI response
  *   POST   /api/upload-pdf      → Upload PDF for RAG ingestion
@@ -12,6 +17,7 @@
  *   GET    /api/sessions/{id}   → Retrieve full chat history
  *   DELETE /api/sessions/{id}   → Clear session data
  *   POST   /api/auth/google     → Google OAuth verification
+ *   POST   /api/auth/refresh    → Silent token refresh
  *   POST   /api/auth/logout     → Clear auth cookie (logout)
  *   GET    /api/auth/me         → Get current user from JWT cookie
  */
@@ -65,6 +71,11 @@ const MeResponseSchema = z.object({
   profile_url: z.string().nullable().optional(),
 });
 
+const ProfilePictureResponseSchema = z.object({
+  status: z.string(),
+  profile_url: z.string(),
+});
+
 /* ── Exported TypeScript types (inferred from Zod) ─────── */
 
 export type GoogleUser = z.infer<typeof GoogleUserSchema>;
@@ -75,6 +86,39 @@ export type SessionSummary = z.infer<typeof SessionSummarySchema>;
 export type SessionHistoryMessage = z.infer<typeof SessionHistoryMessageSchema>;
 export type SessionHistoryResponse = z.infer<typeof SessionHistoryResponseSchema>;
 export type MeResponse = z.infer<typeof MeResponseSchema>;
+export type ProfilePictureResponse = z.infer<typeof ProfilePictureResponseSchema>;
+
+/* ── Silent token refresh ──────────────────────────────── */
+
+/** In-flight refresh promise — deduplicates concurrent 401 retries */
+let _refreshPromise: Promise<boolean> | null = null;
+
+/**
+ * Attempt a silent token refresh by calling the /auth/refresh proxy.
+ * Returns true if successful (new access token cookie set), false otherwise.
+ *
+ * Deduplicates concurrent calls: if a refresh is already in flight,
+ * all callers share the same promise.
+ */
+export async function refreshToken(): Promise<boolean> {
+  if (_refreshPromise) return _refreshPromise;
+
+  _refreshPromise = (async () => {
+    try {
+      const res = await fetch("/api/auth/refresh", {
+        method: "POST",
+        credentials: "include",
+      });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      _refreshPromise = null;
+    }
+  })();
+
+  return _refreshPromise;
+}
 
 /* ── API functions ─────────────────────────────────────── */
 
@@ -118,6 +162,8 @@ export async function logoutUser(signal?: AbortSignal): Promise<void> {
 /**
  * Check if the current user is authenticated by verifying the JWT cookie.
  * Returns user info if authenticated, null if not.
+ *
+ * Automatically attempts a silent token refresh on 401 before giving up.
  */
 export async function getMe(signal?: AbortSignal): Promise<MeResponse | null> {
   try {
@@ -126,9 +172,29 @@ export async function getMe(signal?: AbortSignal): Promise<MeResponse | null> {
       credentials: "include",
       signal,
     });
-    if (!res.ok) return null;
-    const raw = await res.json();
-    return MeResponseSchema.parse(raw);
+
+    if (res.ok) {
+      const raw = await res.json();
+      return MeResponseSchema.parse(raw);
+    }
+
+    // If 401, try silent refresh then retry once
+    if (res.status === 401) {
+      const refreshed = await refreshToken();
+      if (refreshed) {
+        const retryRes = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include",
+          signal,
+        });
+        if (retryRes.ok) {
+          const raw = await retryRes.json();
+          return MeResponseSchema.parse(raw);
+        }
+      }
+    }
+
+    return null;
   } catch {
     return null;
   }
@@ -150,6 +216,33 @@ export async function sendMessage(
     body: JSON.stringify({ session_id: sessionId, message }),
     signal,
   });
+
+  // Auto-refresh on 401 and retry
+  if (res.status === 401) {
+    const refreshed = await refreshToken();
+    if (refreshed) {
+      const retryRes = await fetch("/api/chat", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, message }),
+        signal,
+      });
+      if (!retryRes.ok) {
+        throw new Error(`Chat request failed (${retryRes.status})`);
+      }
+      const reader = retryRes.body?.getReader();
+      if (!reader) throw new Error("Response body is not readable");
+      const decoder = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        onChunk(decoder.decode(value, { stream: true }));
+      }
+      return;
+    }
+  }
+
   if (!res.ok) {
     throw new Error(`Chat request failed (${res.status})`);
   }
@@ -243,4 +336,51 @@ export async function deleteSession(
   if (!res.ok) {
     throw new Error(`Delete failed (${res.status})`);
   }
+}
+
+/**
+ * Upload a new user profile picture.
+ * The backend uploads it to Cloudinary and saves it in PostgreSQL
+ * mapped to the user's openid as primary key.
+ */
+export async function uploadProfilePicture(
+  file: File,
+  signal?: AbortSignal
+): Promise<ProfilePictureResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch("/api/auth/profile-picture", {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+    signal,
+  });
+
+  // Auto-refresh on 401 and retry once
+  if (res.status === 401) {
+    const refreshed = await refreshToken();
+    if (refreshed) {
+      const retryRes = await fetch("/api/auth/profile-picture", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+        signal,
+      });
+      if (!retryRes.ok) {
+        const errorData = await retryRes.json().catch(() => ({}));
+        throw new Error(errorData.error || `Upload failed (${retryRes.status})`);
+      }
+      const raw = await retryRes.json();
+      return ProfilePictureResponseSchema.parse(raw);
+    }
+  }
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `Upload failed (${res.status})`);
+  }
+
+  const raw = await res.json();
+  return ProfilePictureResponseSchema.parse(raw);
 }

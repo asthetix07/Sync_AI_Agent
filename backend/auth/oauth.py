@@ -1,24 +1,43 @@
 """
-Google OAuth verification route.
+Google OAuth verification route + token refresh.
 
 The frontend sends the Google Identity Services id_token as `credential`.
 This backend verifies the token signature and audience with Google,
-stores profile data in Postgres, and sets an httpOnly JWT cookie.
+stores profile data in Postgres, and sets httpOnly JWT cookies.
+
+Token strategy:
+  - POST /auth/google   → verify Google id_token, set access + refresh cookies
+  - POST /auth/refresh  → use refresh cookie to mint a fresh access token
+  - POST /auth/logout   → clear both cookies
+  - GET  /auth/me       → return user info from the access token
 """
 
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Response, status, UploadFile, File, Depends, Request
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 from pydantic import BaseModel, Field
 
 from app.config import settings
-from app.core.security import create_access_token, set_auth_cookie, clear_auth_cookie
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    set_auth_cookie,
+    set_refresh_cookie,
+    clear_auth_cookie,
+    get_refresh_token_from_cookie,
+    verify_refresh_token,
+)
 from app.core.dependencies import get_current_user
 from app.core.rate_limit import limiter
-from app.db.postgres import upsert_user_data
+from app.db.postgres import (
+    upsert_user_data,
+    get_user_by_openid,
+    save_user_profile_picture,
+    get_user_profile_picture,
+)
+from app.utils.cloudinary_service import upload_avatar_image
 from app.utils.email import send_welcome_email
 from app.utils.logger import logger
-from fastapi import Depends, Request
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -111,26 +130,81 @@ async def google_auth(request: Request, body: GoogleAuthRequest, response: Respo
         profile_url=idinfo.get("picture"),
     )
 
-    # ── Send welcome email on every Google sign-in ───────
+    # ── Send welcome email on each signup / sign-in ───────
     send_welcome_email(to_email=email, user_name=idinfo.get("name"))
 
-    # ── Create JWT and set httpOnly cookie ────────────────
+    # ── Create JWT tokens and set httpOnly cookies ───────
     access_token = create_access_token(
         subject=openid,
         extra_claims={"email": email, "name": idinfo.get("name"), "profile_url": idinfo.get("picture")},
     )
+    refresh_token = create_refresh_token(subject=openid)
+
     set_auth_cookie(response, access_token)
-    logger.info(f"Auth success: set httpOnly cookie for user {email}")
+    set_refresh_cookie(response, refresh_token)
+    logger.info(f"Auth success: set httpOnly cookies for user {email}")
 
     # Strip internal flag before returning to client
     user.pop("is_new_user", None)
     return {"status": "success", "user": user}
 
 
+@router.post("/refresh")
+@limiter.limit("30/minute")
+async def refresh_access_token(request: Request, response: Response):
+    """Use the refresh token cookie to issue a fresh access token.
+
+    This endpoint is called by the frontend when the access token expires
+    (401 from /auth/me) to silently re-authenticate without showing the
+    login dialog.
+    """
+    refresh_token = get_refresh_token_from_cookie(request)
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No refresh token",
+        )
+
+    # verify_refresh_token raises 401 if invalid/expired
+    payload = verify_refresh_token(refresh_token)
+    openid = payload["sub"]
+
+    # Look up current user data from DB to include in the new access token
+    user = get_user_by_openid(openid)
+    if not user:
+        logger.warning(f"Refresh token for unknown user {openid[:8]}...")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+        )
+
+    # Issue fresh access token with up-to-date profile data
+    access_token = create_access_token(
+        subject=openid,
+        extra_claims={
+            "email": user["email"],
+            "name": user.get("name"),
+            "profile_url": user.get("profile_url"),
+        },
+    )
+    set_auth_cookie(response, access_token)
+    logger.info(f"Token refresh success for {user['email']}")
+
+    return {
+        "status": "refreshed",
+        "user": {
+            "openid": openid,
+            "email": user["email"],
+            "name": user.get("name"),
+            "profile_url": user.get("profile_url"),
+        },
+    }
+
+
 @router.post("/logout")
 @limiter.limit("10/minute")
 async def logout(request: Request, response: Response):
-    """Clear the auth cookie to log the user out."""
+    """Clear both auth cookies to log the user out."""
     clear_auth_cookie(response)
     return {"status": "logged_out"}
 
@@ -138,10 +212,88 @@ async def logout(request: Request, response: Response):
 @router.get("/me")
 @limiter.limit("30/minute")
 async def get_me(request: Request, user: dict = Depends(get_current_user)):
-    """Return the current authenticated user's info from the JWT."""
+    """Return the current authenticated user's info from the JWT and database."""
+    openid = user.get("sub")
+    custom_pic = get_user_profile_picture(openid) if openid else None
     return {
-        "openid": user.get("sub"),
+        "openid": openid,
         "email": user.get("email"),
         "name": user.get("name"),
-        "profile_url": user.get("profile_url"),
+        "profile_url": custom_pic or user.get("profile_url"),
+    }
+
+
+@router.post("/profile-picture")
+@limiter.limit("10/minute")
+async def upload_user_profile_picture(
+    request: Request,
+    response: Response,
+    file: UploadFile = File(...),
+    user: dict = Depends(get_current_user),
+):
+    """
+    Upload a user profile picture to Cloudinary, save it in user_profile_pictures table
+    mapped to openid as the primary key, and refresh access token cookie.
+    """
+    openid = user.get("sub")
+    if not openid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required",
+        )
+
+    # Validate file type
+    allowed_content_types = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+    if file.content_type not in allowed_content_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid image format. Allowed formats: JPG, PNG, WEBP, GIF",
+        )
+
+    # Read bytes and check size (max 5MB)
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Image file size exceeds the 5MB limit",
+        )
+
+    try:
+        upload_res = upload_avatar_image(content, openid=openid)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except Exception as e:
+        logger.error(f"Failed to upload profile picture: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Cloudinary upload failed: {str(e)}",
+        )
+
+    profile_url = upload_res["url"]
+    public_id = upload_res.get("public_id")
+
+    # Save to user_profile_pictures table mapped with openid as PK
+    save_user_profile_picture(
+        openid=openid,
+        profile_url=profile_url,
+        public_id=public_id,
+    )
+
+    # Update JWT access token with new profile_url so caller receives updated cookie
+    new_access_token = create_access_token(
+        subject=openid,
+        extra_claims={
+            "email": user.get("email"),
+            "name": user.get("name"),
+            "profile_url": profile_url,
+        },
+    )
+    set_auth_cookie(response, new_access_token)
+
+    return {
+        "status": "success",
+        "profile_url": profile_url,
     }

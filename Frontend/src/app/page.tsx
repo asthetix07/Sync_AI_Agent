@@ -105,8 +105,10 @@ export default function Page() {
         onClose={() => setShowLoginDialog(false)}
         onSuccess={() => {
           setIsLoggedIn(true);
-          // Redirect to /chat after successful login
-          window.location.href = "/chat";
+          setShowLoginDialog(false);
+          // Use router.push instead of window.location.href to avoid
+          // full page reload that can flash the signup modal
+          router.push("/chat");
         }}
       />
     </div>

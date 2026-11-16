@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
  *
  * Proxies the logout request to the FastAPI backend.
  * Forwards the browser's cookies so the backend can clear
- * the httpOnly `access_token` cookie.
+ * both the httpOnly `access_token` and `refresh_token` cookies.
  */
 export async function POST(req: NextRequest) {
   const backendUrl = process.env.BACKEND_BASE_URL;
@@ -39,10 +39,17 @@ export async function POST(req: NextRequest) {
     const data = await response.json();
     const res = NextResponse.json(data);
 
-    // Forward the Set-Cookie header from backend to clear the cookie in the browser
-    const setCookie = response.headers.get("set-cookie");
-    if (setCookie) {
-      res.headers.set("set-cookie", setCookie);
+    // Forward ALL Set-Cookie headers from backend to clear both cookies
+    const setCookieHeaders = response.headers.getSetCookie?.() ?? [];
+    if (setCookieHeaders.length > 0) {
+      for (const cookie of setCookieHeaders) {
+        res.headers.append("set-cookie", cookie);
+      }
+    } else {
+      const setCookie = response.headers.get("set-cookie");
+      if (setCookie) {
+        res.headers.set("set-cookie", setCookie);
+      }
     }
 
     return res;

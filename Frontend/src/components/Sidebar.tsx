@@ -10,11 +10,9 @@ import {
   X,
   LogOut,
   Trash2,
-  Sun,
-  Moon,
 } from "lucide-react";
 import type { ChatSession } from "@/types";
-import { useTheme } from "./ThemeProvider";
+import SettingsModal from "./SettingsModal";
 
 interface SidebarProps {
   sessions: ChatSession[];
@@ -27,6 +25,7 @@ interface SidebarProps {
   onLogout: () => void;
   isLoggedIn: boolean;
   userProfile?: { name: string | null; email: string; profile_url?: string | null } | null;
+  onProfileUpdated?: (newProfileUrl: string) => void;
 }
 
 export default function Sidebar({
@@ -40,11 +39,11 @@ export default function Sidebar({
   onLogout,
   isLoggedIn,
   userProfile,
+  onProfileUpdated,
 }: SidebarProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const { theme, toggleTheme } = useTheme();
   const [isMobile, setIsMobile] = useState(false);
 
   // Detect mobile viewport
@@ -217,72 +216,36 @@ export default function Sidebar({
           paddingBottom: isMobile ? "calc(0.75rem + env(safe-area-inset-bottom, 16px))" : "0.75rem",
         }}
       >
-        {isOpen && (
-          <div
-            className="flex flex-col rounded-xl transition-all"
-            style={
-              isSettingsOpen
-                ? {
-                    border: "1px solid var(--color-border-primary)",
-                    background: "var(--color-bg-tertiary)",
-                  }
-                : {}
-            }
-          >
-            <AnimatePresence>
-              {isSettingsOpen && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
-                >
-                  {/* ── Theme toggle button ─────────────────────── */}
-                  <button
-                    onClick={toggleTheme}
-                    className="flex items-center gap-3 w-full p-3 transition-all text-sm cursor-pointer"
-                    style={{ color: "var(--color-text-tertiary)" }}
-                  >
-                    {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-                    <span>
-                      {theme === "dark" ? "Change to light mode" : "Change to dark mode"}
-                    </span>
-                  </button>
-                  <div
-                    className="h-[1px] mx-3"
-                    style={{ background: "var(--color-border-primary)" }}
-                  />
-                  <button
-                    onClick={() => setShowLogoutConfirm(true)}
-                    className="flex items-center gap-3 w-full p-3 transition-all text-sm cursor-pointer"
-                    style={{ color: "var(--color-red-text)" }}
-                  >
-                    <LogOut size={18} />
-                    <span>Logout</span>
-                  </button>
-                  <div
-                    className="h-[1px] mx-3"
-                    style={{ background: "var(--color-border-primary)" }}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-            
-            <button
-              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-              className="flex items-center gap-3 w-full p-3 rounded-xl transition-all cursor-pointer"
-              style={{ color: isSettingsOpen ? "var(--color-text-secondary)" : "var(--color-text-muted)" }}
-            >
-              <img
-                src="/icons8-setting.svg"
-                alt="Settings"
-                className="w-[20px] h-[20px]"
-                style={{ filter: "var(--color-settings-icon-filter)" }}
-              />
-              <span className="text-sm font-medium">Settings</span>
-            </button>
-          </div>
-        )}
+        {/* Settings button */}
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className={`flex items-center gap-3 w-full p-2.5 rounded-xl transition-all cursor-pointer hover:bg-white/5 ${
+            !isOpen ? "justify-center p-2" : ""
+          }`}
+          style={{ color: "var(--color-text-muted)" }}
+          title="Settings"
+        >
+          <img
+            src="/icons8-setting.svg"
+            alt="Settings"
+            className="w-[20px] h-[20px]"
+            style={{ filter: "var(--color-settings-icon-filter)" }}
+          />
+          {isOpen && <span className="text-sm font-medium">Settings</span>}
+        </button>
+
+        {/* Logout button */}
+        <button
+          onClick={() => setShowLogoutConfirm(true)}
+          className={`flex items-center gap-3 w-full p-2.5 rounded-xl transition-all cursor-pointer hover:bg-red-500/10 ${
+            !isOpen ? "justify-center p-2" : ""
+          }`}
+          style={{ color: "var(--color-red-text)" }}
+          title="Logout"
+        >
+          <LogOut size={18} />
+          {isOpen && <span className="text-sm font-medium">Logout</span>}
+        </button>
 
         <div
           className={`flex items-center gap-3 w-full p-2 mt-2 rounded-xl ${
@@ -473,6 +436,13 @@ export default function Sidebar({
         </motion.div>
       )}
     </AnimatePresence>
+      {/* ── Settings Modal ──────────────────────────────────── */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        userProfile={userProfile}
+        onProfileUpdated={onProfileUpdated}
+      />
     </>
   );
 }

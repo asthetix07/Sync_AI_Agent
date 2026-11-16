@@ -61,6 +61,62 @@ class UserDataSyncAi(Base):
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
 
+class UserProfilePicture(Base):
+    """
+    Stores user custom profile pictures uploaded via Cloudinary.
+    Mapped to openid (userid) as primary key.
+    """
+    __tablename__ = "user_profile_pictures"
+
+    openid = Column(String, primary_key=True)
+    profile_url = Column(Text, nullable=False)
+    public_id = Column(String, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+def save_user_profile_picture(
+    *,
+    openid: str,
+    profile_url: str,
+    public_id: str | None = None,
+) -> dict[str, str | None]:
+    """Upsert profile picture for user openid in the user_profile_pictures table."""
+    with SessionLocal() as db:
+        pic = db.get(UserProfilePicture, openid)
+        if pic is None:
+            pic = UserProfilePicture(
+                openid=openid,
+                profile_url=profile_url,
+                public_id=public_id,
+            )
+            db.add(pic)
+        else:
+            pic.profile_url = profile_url
+            if public_id:
+                pic.public_id = public_id
+
+        user = db.get(UserDataSyncAi, openid)
+        if user:
+            user.profile_url = profile_url
+
+        db.commit()
+        return {
+            "openid": pic.openid,
+            "profile_url": pic.profile_url,
+            "public_id": pic.public_id,
+        }
+
+
+def get_user_profile_picture(openid: str) -> str | None:
+    """Fetch custom profile picture URL for a user from user_profile_pictures."""
+    with SessionLocal() as db:
+        pic = db.get(UserProfilePicture, openid)
+        if pic and pic.profile_url:
+            return pic.profile_url
+        return None
+
+
 def upsert_user_data(
     *,
     openid: str,
@@ -71,31 +127,58 @@ def upsert_user_data(
     """Insert or update a Google OAuth user row.
 
     Returns a dict with user data plus `is_new_user` (True on first signup).
+    Preserves custom profile picture if one exists in user_profile_pictures.
     """
     with SessionLocal() as db:
         user = db.get(UserDataSyncAi, openid)
         is_new_user = user is None
+
+        pic = db.get(UserProfilePicture, openid)
+        custom_url = pic.profile_url if (pic and pic.profile_url) else None
+
+        effective_profile_url = custom_url or profile_url
 
         if is_new_user:
             user = UserDataSyncAi(
                 openid=openid,
                 name=name,
                 email=email,
-                profile_url=profile_url,
+                profile_url=effective_profile_url,
             )
             db.add(user)
         else:
             user.name = name
             user.email = email
-            user.profile_url = profile_url
+            if not custom_url:
+                user.profile_url = profile_url
 
         db.commit()
         return {
             "openid": user.openid,
             "name": user.name,
             "email": user.email,
-            "profile_url": user.profile_url,
+            "profile_url": custom_url or user.profile_url,
             "is_new_user": is_new_user,
+        }
+
+
+def get_user_by_openid(openid: str) -> dict | None:
+    """Look up a user by their Google openid (sub claim).
+
+    Returns a dict with user data, or None if not found.
+    Used by the /auth/refresh endpoint to populate the new access token.
+    """
+    with SessionLocal() as db:
+        user = db.get(UserDataSyncAi, openid)
+        if user is None:
+            return None
+        pic = db.get(UserProfilePicture, openid)
+        custom_url = pic.profile_url if (pic and pic.profile_url) else None
+        return {
+            "openid": user.openid,
+            "name": user.name,
+            "email": user.email,
+            "profile_url": custom_url or user.profile_url,
         }
 
 

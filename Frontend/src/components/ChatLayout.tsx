@@ -43,16 +43,35 @@ export default function ChatLayout() {
   }, [sessionIdFromUrl]);
 
   // ── Verify auth state on mount via httpOnly cookie ─────────
+  // getMe() now has built-in silent token refresh on 401,
+  // so this check is resilient to expired access tokens.
   useEffect(() => {
     const controller = new AbortController();
 
     async function checkAuth() {
       try {
+        // Check for cached profile in localStorage first for instant UI
+        const cached = window.localStorage.getItem(AUTH_STORAGE_KEY);
+        if (cached) {
+          try {
+            const profile = JSON.parse(cached);
+            if (profile?.email) {
+              // Show UI as logged in optimistically while verifying
+              setUserProfile(profile);
+              setIsLoggedIn(true);
+            }
+          } catch {
+            // Invalid cached data, ignore
+          }
+        }
+
         // Verify the httpOnly cookie by hitting /auth/me
+        // (includes automatic silent refresh on 401)
         const me = await getMe(controller.signal);
         if (me) {
           setIsLoggedIn(true);
           setUserProfile({ name: me.name, email: me.email, profile_url: me.profile_url });
+          setShowLoginDialog(false);
           // Keep localStorage in sync for profile display (no tokens stored)
           window.localStorage.setItem(
             AUTH_STORAGE_KEY,
@@ -63,15 +82,26 @@ export default function ChatLayout() {
             })
           );
         } else {
-          // Cookie missing or expired — check localStorage fallback
+          // Both access token AND refresh token are invalid/expired
+          // — user genuinely needs to re-authenticate
           setIsLoggedIn(false);
           setUserProfile(null);
           window.localStorage.removeItem(AUTH_STORAGE_KEY);
           setShowLoginDialog(true);
         }
-      } catch {
-        setIsLoggedIn(false);
-        setShowLoginDialog(true);
+      } catch (err: unknown) {
+        // Only show login dialog for genuine auth failures, not network errors
+        if (err instanceof Error && err.name === "AbortError") return;
+
+        // Check if we have a cached profile — if so, don't show the modal
+        // (it's likely a transient network issue, not an auth failure)
+        const cached = window.localStorage.getItem(AUTH_STORAGE_KEY);
+        if (!cached) {
+          setIsLoggedIn(false);
+          setShowLoginDialog(true);
+        }
+        // If cached profile exists, stay "logged in" optimistically
+        // The next API call will trigger a proper 401 flow
       } finally {
         setIsCheckingAuth(false);
       }
@@ -187,7 +217,7 @@ export default function ChatLayout() {
     setSessions([]);
     setCurrentSessionId(null);
     setIsSidebarOpen(false);
-    setShowLoginDialog(true);
+    setShowLoginDialog(false);
     router.push("/");
   }, [router]);
 
@@ -394,6 +424,15 @@ export default function ChatLayout() {
     [currentSessionId, router]
   );
 
+  // Show loading spinner while checking auth (prevents flash of login modal)
+  if (isCheckingAuth) {
+    return (
+      <div className="flex h-dvh items-center justify-center" style={{ background: 'var(--color-bg-primary)' }}>
+        <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--color-text-ghost)', borderTopColor: 'var(--color-text-secondary)' }} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-dvh overflow-hidden font-sans" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }}>
       <main className="flex-1 flex flex-col relative overflow-hidden">
@@ -436,17 +475,41 @@ export default function ChatLayout() {
         onLogout={handleLogout}
         isLoggedIn={isLoggedIn}
         userProfile={userProfile}
+        onProfileUpdated={(newProfileUrl) => {
+          setUserProfile((prev) => {
+            const updated = prev ? { ...prev, profile_url: newProfileUrl } : null;
+            if (updated) {
+              window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+            }
+            return updated;
+          });
+        }}
       />
 
       <SignupDialog 
         isOpen={showLoginDialog}
         onClose={() => setShowLoginDialog(false)}
         onSuccess={() => {
+          setShowLoginDialog(false);
           setIsLoggedIn(true);
-          // Redirect to /chat after successful login
+          // Use router.push instead of window.location.href to avoid
+          // a full page reload that re-triggers the auth check and
+          // can flash the signup modal
           router.push("/chat");
-          // Reload to re-run auth check and hydrate sessions
-          window.location.href = "/chat";
+          // Re-fetch user profile to populate sidebar
+          getMe().then((me) => {
+            if (me) {
+              setUserProfile({ name: me.name, email: me.email, profile_url: me.profile_url });
+              window.localStorage.setItem(
+                AUTH_STORAGE_KEY,
+                JSON.stringify({
+                  name: me.name,
+                  email: me.email,
+                  profile_url: me.profile_url,
+                })
+              );
+            }
+          });
         }}
       />
     </div>
